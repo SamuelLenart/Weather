@@ -6,6 +6,13 @@ class TreeFrog extends Animal {
         super(name, colour, news);
         this.pohlavie = pohlavie;
         this.weather = this.#createWeatherForecast();
+        this.weatherForm = document.getElementById('weatherForm')
+    
+    this.weatherForm.addEventListener("submit", (e) => {
+    e.preventDefault()
+    this.getActualWeatherForCity();
+    
+    })
     }
 
     #createWeatherForecast() {
@@ -20,37 +27,46 @@ class TreeFrog extends Animal {
     }
 
     makeForecast() {
-        const forecast = "bude pekne"
-        if (this._dead) {
-            this.informWorld('nič nebude predpovedať ...');
-        } else {
-
-            
-
-            /*const apiKey = 'af82958cf398ec6278f79b8fcf35e384';  
-            const mestoKrajina = 'Bardejov,SK' 
-            fetch('https://api.openweathermap.org/data/2.5/weather?q=' + mestoKrajina + '&appid=' + apiKey + '&units=metric')
-                .then(resp => {
-                    if (!resp.ok) {
-                        return (resp.statusText + " " + resp.status)
-                    } else {
-                        return resp.json()
-                    }
-                })
-                .then(json => {
-                    
-
-                    this.weather.innerHTML += ("<br>" + this.constructor.name + " " + this.name + " " + json.main.temp +
-                    "<br>" + json.name + "<br>" + json.weather[0].description)
-                })
-                .catch(error => {
-                    console.log(error)
-                });*/
-                
-        }
+        const city = document.getElementById('city').value;
+        const state = document.getElementById('state').value;
         const apiKey = '290526a576cd425b8f30356b3d538ba5';
         const krajina = 'Bardejov,SK'
-        fetch('https://api.opencagedata.com/geocode/v1/json?q=PLACENAME&key=+ 290526a576cd425b8f30356b3d538ba5 +')
+        fetch('https://api.opencagedata.com/geocode/v1/json?q='+city+'%2C%20'+state+'&key=290526a576cd425b8f30356b3d538ba5')
+        .then((resp) => {
+            if (!resp.ok) {
+              return resp.statusText + " " + resp.status;
+            } else {
+               return resp.json();
+           }
+        })
+          .then((json) => {
+            console.log(json)
+          const lat = json.results[0].geometry.lat
+          const lng = json.results[0].geometry.lng
+          const api = '290526a576cd425b8f30356b3d538ba5';
+          fetch('https://api.openweathermap.org/data/2.5/onecall?lat='+lat +'&lon='+ lng + '&exclude=hourly,daily,minutely,alerts' + '&appid=' +api +'&units=metric')
+          .then((resp) => {
+            if (!resp.ok) {
+              return resp.statusText + " " + resp.status;
+            } else {
+               return resp.json();
+           }
+          })
+          .then(jsonWeather => {
+            this.weather.innerHTML += `<div id="weatherInfo"> 
+            <p id="cityState">  ${city} ${state}  </p> 
+            <br> <img id="img" src=\http://openweathermap.org/img/wn/${jsonWeather.current.weather[0].icon}@2x.png\> <br>
+            <br> <p id="temp"> ${Math.round(jsonWeather.current.temp)} °C </p>
+            <br> <p id="description"> ${jsonWeather.current.weather[0].description} </p>
+            </div>`
+            
+            
+        })
+    
+            
+    
+      })
+    
        
 
     }
